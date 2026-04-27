@@ -138,6 +138,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .btn-sm.danger{background:var(--red-l);color:var(--red-t);border-color:var(--red-t);opacity:0.85}
 .btn-sm.primary{background:var(--blue);color:#fff;border:none}
 
+.day-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.day-chip{padding:8px 0;border-radius:50%;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;width:38px;height:38px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.day-chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.cfg-stack{padding:12px 0;border-bottom:0.5px solid var(--border)}
+.cfg-stack:last-child{border-bottom:none}
+
 /* LOGGING SHEET */
 .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:399;display:none}
 .sheet-overlay.on{display:block}
@@ -350,9 +356,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div><div class="slabel">Daily reminder</div><div class="ssub">Remind if workout isn't done</div></div>
       <input type="time" id="cfg-time" value="17:00" onchange="saveCfg('reminderTime',this.value)"/>
     </div>
-    <div class="srow">
-      <div><div class="slabel">Skip Fri &amp; Sat nights</div><div class="ssub">For overnight shift workers</div></div>
-      <label class="tog"><input type="checkbox" id="cfg-overnight" checked onchange="saveCfg('skipOvernight',this.checked)"/><div class="tog-track"></div><div class="tog-thumb"></div></label>
+    <div class="cfg-stack">
+      <div><div class="slabel">Days to remind</div><div class="ssub">Tap to toggle which days you want reminders</div></div>
+      <div class="day-chips" id="cfg-days"></div>
     </div>
     <div class="srow">
       <div><div class="slabel">Push notifications</div><div class="ssub" id="cfg-notif-status">Not enabled</div></div>
@@ -599,7 +605,13 @@ const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturda
 let PROFILE=JSON.parse(localStorage.getItem('hf_profile')||'null');
 let ST=JSON.parse(localStorage.getItem('hf_st')||'null')||{done:{},ex:{}};
 let LOGS=JSON.parse(localStorage.getItem('hf_logs')||'null')||{};
-let CFG=JSON.parse(localStorage.getItem('hf_cfg')||'null')||{reminderTime:'17:00',skipOvernight:true,trackWeight:true};
+let CFG=JSON.parse(localStorage.getItem('hf_cfg')||'null')||{reminderTime:'17:00',reminderDays:[1,2,3,4,5,6],trackWeight:true};
+// Migrate from old skipOvernight setting if present
+if(CFG.reminderDays===undefined){
+  if(CFG.skipOvernight){CFG.reminderDays=[1,2,3,4];} // skip Fri(5) Sat(6) Sun(0)
+  else{CFG.reminderDays=[1,2,3,4,5,6];}
+  delete CFG.skipOvernight;
+}
 if(CFG.trackWeight===undefined)CFG.trackWeight=true;
 let calMo=new Date();calMo.setDate(1);
 let calSel=new Date();
@@ -1027,8 +1039,8 @@ function checkAlert(today,type,key){
   const past=now.getHours()>rh||(now.getHours()===rh&&now.getMinutes()>=rm);
   const isDone=!!ST.done[key];
   const dow=today.getDay();
-  const overnight=CFG.skipOvernight&&(dow===5||dow===6);
-  if(past&&!isDone&&!overnight){
+  const skipDay=!CFG.reminderDays.includes(dow);
+  if(past&&!isDone&&!skipDay){
     banner.classList.add('on');
     const h=rh%12||12;const ap=rh>=12?'PM':'AM';
     document.getElementById('alert-body').textContent="It's past "+h+':'+(rm<10?'0'+rm:rm)+' '+ap+"! Your "+meta.label.toLowerCase()+" isn't done. You've got this!";
@@ -1054,8 +1066,8 @@ function schedNotif(){
   const t=new Date(now.getFullYear(),now.getMonth(),now.getDate(),rh,rm,0);
   const type=dtype(now);
   const dow=now.getDay();
-  const overnight=CFG.skipOvernight&&(dow===5||dow===6);
-  if(t>now&&type&&type!=='rest'&&!overnight){
+  const skipDay=!CFG.reminderDays.includes(dow);
+  if(t>now&&type&&type!=='rest'&&!skipDay){
     setTimeout(()=>{
       if(!ST.done[fk(new Date())]){
         new Notification('HomeFlex — Don\'t skip!',{body:'Your '+dayMeta(type).label+' is waiting. Tap to open.',icon:'icons/icon-192.png',tag:'workout-reminder'});
@@ -1154,11 +1166,29 @@ function renderStats(){
   document.getElementById('wk-detail').innerHTML=wdh;
 }
 
+function toggleDay(dow){
+  const idx=CFG.reminderDays.indexOf(dow);
+  if(idx>-1)CFG.reminderDays.splice(idx,1);
+  else CFG.reminderDays.push(dow);
+  CFG.reminderDays.sort();
+  saveCfg('reminderDays',CFG.reminderDays);
+  renderDayChips();
+}
+function renderDayChips(){
+  const labels=['S','M','T','W','T','F','S'];
+  let h='';
+  for(let i=0;i<7;i++){
+    const on=CFG.reminderDays.includes(i);
+    h+=`<button class="day-chip${on?' on':''}" onclick="toggleDay(${i})">${labels[i]}</button>`;
+  }
+  document.getElementById('cfg-days').innerHTML=h;
+}
+
 const EQ_LBL={dumbbells:'Dumbbells only',bodyweight:'Bodyweight only',both:'Dumbbells + bodyweight'};
 const LV_LBL={beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced'};
 function loadCfg(){
   document.getElementById('cfg-time').value=CFG.reminderTime;
-  document.getElementById('cfg-overnight').checked=CFG.skipOvernight;
+  renderDayChips();
   document.getElementById('cfg-tw').checked=!!CFG.trackWeight;
   document.getElementById('cfg-notif-status').textContent=('Notification' in window&&Notification.permission==='granted')?'Enabled':'Not enabled';
   document.getElementById('cfg-eq').textContent=PROFILE?EQ_LBL[PROFILE.eq]:'—';

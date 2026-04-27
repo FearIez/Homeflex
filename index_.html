@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme:light)"/>
+<meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme:dark)"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="HomeFlex"/>
+<link rel="manifest" href="manifest.json"/>
+<title>HomeFlex</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#fff;--bg2:#f6f6f6;--bg3:#e8e8e8;
+  --text:#1a1a1a;--text2:#555;--text3:#999;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.18);
+  --green:#3B6D11;--green-l:#EAF3DE;--green-t:#27500A;
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-t:#0C447C;
+  --red-l:#FCEBEB;--red-t:#791F1F;
+  --push:#FAECE7;--push-t:#712B13;--push-dot:#D85A30;
+  --pull:#E1F5EE;--pull-t:#085041;--pull-dot:#1D9E75;
+  --legs:#EEEDFE;--legs-t:#3C3489;--legs-dot:#7F77DD;
+  --rest:#F1EFE8;--rest-t:#444441;--rest-dot:#888780;
+  --r:14px;--rs:8px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#181818;--bg2:#242424;--bg3:#2e2e2e;
+  --text:#f0f0f0;--text2:#aaa;--text3:#666;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.15);
+  --green:#639922;--green-l:#1a2e0a;--green-t:#C0DD97;
+  --blue:#378ADD;--blue-l:#0a1e3a;--blue-t:#B5D4F4;
+  --red-l:#2a0a0a;--red-t:#F09595;
+  --push:#2a1208;--push-t:#F0997B;
+  --pull:#051a14;--pull-t:#5DCAA5;
+  --legs:#13124a;--legs-t:#AFA9EC;
+  --rest:#1e1d18;--rest-t:#B4B2A9;
+}}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.5;overflow-x:hidden}
+
+.setup{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;flex-direction:column;padding:calc(20px + var(--safe-t)) 22px calc(20px + var(--safe-b));overflow-y:auto}
+.setup.on{display:flex}
+.setup-step{display:none;flex:1;flex-direction:column}
+.setup-step.on{display:flex}
+.setup-brand{font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px}
+.setup-tag{font-size:14px;color:var(--text2);margin-bottom:30px}
+.setup-q{font-size:21px;font-weight:600;margin-bottom:6px;line-height:1.3}
+.setup-sub{font-size:14px;color:var(--text2);margin-bottom:24px}
+.opt{background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px 18px;margin-bottom:11px;cursor:pointer;transition:all .15s;text-align:left;width:100%;font-family:inherit}
+.opt:hover{border-color:var(--blue)}
+.opt.sel{border-color:var(--blue);background:var(--blue-l)}
+.opt-t{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px}
+.opt-d{font-size:13px;color:var(--text2);line-height:1.4}
+.setup-btns{display:flex;gap:10px;margin-top:auto;padding-top:18px}
+.setup-btn{flex:1;padding:14px;border-radius:var(--rs);border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.setup-btn.primary{background:var(--blue);color:#fff}
+.setup-btn.primary:disabled{opacity:0.4;cursor:not-allowed}
+.setup-btn.ghost{background:var(--bg2);color:var(--text)}
+.setup-prog{display:flex;gap:6px;margin-bottom:24px}
+.setup-prog div{flex:1;height:3px;background:var(--bg3);border-radius:2px}
+.setup-prog div.on{background:var(--blue)}
+
+.nav{display:flex;background:var(--bg);border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:100;padding-top:var(--safe-t)}
+.nb{flex:1;padding:12px 4px 10px;font-size:11px;color:var(--text3);border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+.nb.on{color:var(--blue)}
+.nb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.page{display:none;padding:14px 14px calc(14px + var(--safe-b))}
+.page.on{display:block}
+
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:12px}
+.ctitle{font-size:15px;font-weight:600;margin-bottom:12px;color:var(--text)}
+
+.clock-wrap{text-align:center;padding:18px 0 6px}
+.clock-time{font-size:50px;font-weight:300;letter-spacing:-1px;color:var(--text);font-variant-numeric:tabular-nums}
+.clock-date{font-size:13px;color:var(--text2);margin-top:3px}
+
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px}
+
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cnb{background:var(--bg2);border:none;border-radius:var(--rs);width:32px;height:32px;font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.clbl{font-size:11px;color:var(--text3);text-align:center;padding:3px 0}
+.cday{text-align:center;padding:5px 1px 3px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--text3);display:flex;flex-direction:column;align-items:center;min-height:34px}
+.cday.ht{color:var(--text)}
+.cday.td{background:var(--blue-l);color:var(--blue-t);font-weight:600}
+.cday.sel{outline:2px solid var(--blue);outline-offset:-1px}
+.cdot{width:5px;height:5px;border-radius:50%;margin-top:2px}
+
+.ex-item{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:0.5px solid var(--border)}
+.ex-item:last-child{border-bottom:none}
+.chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.chk.dn{background:var(--green);border-color:var(--green)}
+.chk.dn::after{content:'';width:6px;height:11px;border:2.5px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-2px);display:block}
+.ex-info{flex:1;min-width:0}
+.exn{font-size:14px;font-weight:500;color:var(--text)}
+.exs{font-size:12px;color:var(--text2);margin-top:1px}
+.vid-btn{font-size:12px;padding:5px 9px;border-radius:var(--rs);background:var(--bg2);border:0.5px solid var(--border);color:var(--text2);cursor:pointer;text-decoration:none;white-space:nowrap}
+
+.pb-wrap{background:var(--bg3);border-radius:5px;height:6px;overflow:hidden;margin:7px 0 3px}
+.pb-fill{height:100%;background:var(--green);border-radius:5px;transition:width .3s}
+.pb-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2)}
+
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.scard{background:var(--bg2);border-radius:var(--r);padding:14px;text-align:center}
+.sval{font-size:28px;font-weight:600;color:var(--text)}
+.slbl{font-size:11px;color:var(--text3);margin-top:2px}
+
+.alert{background:#FFF3CD;border:1px solid #FFCA2C;border-radius:var(--r);padding:13px 15px;margin-bottom:12px;display:none}
+.alert.on{display:block}
+.alert-t{font-size:14px;font-weight:600;color:#664d03}
+.alert-b{font-size:13px;color:#664d03;margin-top:3px}
+
+.notif-prompt{background:var(--blue-l);border:0.5px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-bottom:12px;display:none;align-items:center;gap:12px}
+.notif-prompt p{font-size:13px;color:var(--blue-t);flex:1}
+.notif-prompt button{font-size:13px;font-weight:600;padding:8px 14px;border-radius:var(--rs);background:var(--blue);color:#fff;border:none;cursor:pointer;white-space:nowrap}
+
+.srow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border);gap:12px}
+.srow:last-child{border-bottom:none}
+.slabel{font-size:14px;color:var(--text)}
+.ssub{font-size:12px;color:var(--text3);margin-top:1px}
+.srow input[type=time]{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--rs);padding:6px 10px;font-size:14px;color:var(--text);width:108px}
+.tog{position:relative;width:46px;height:26px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.tog-track{position:absolute;inset:0;background:var(--bg3);border-radius:13px;transition:background .2s;cursor:pointer}
+.tog input:checked+.tog-track{background:var(--green)}
+.tog-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none}
+.tog input:checked~.tog-thumb{transform:translateX(20px)}
+.btn-sm{font-size:13px;padding:7px 13px;border-radius:var(--rs);background:var(--bg2);color:var(--text);border:0.5px solid var(--border2);cursor:pointer;font-family:inherit}
+.btn-sm.danger{background:var(--red-l);color:var(--red-t);border-color:var(--red-t);opacity:0.85}
+.btn-sm.primary{background:var(--blue);color:#fff;border:none}
+</style>
+</head>
+<body>
+
+<div class="setup" id="setup">
+  <div class="setup-step on" id="step-welcome">
+    <div class="setup-brand">HomeFlex</div>
+    <div class="setup-tag">Strength training at home. Yours forever.</div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 0">
+      <div class="setup-q">Let's set up your program</div>
+      <div class="setup-sub">Two quick questions and we'll build a workout plan that fits what you have and where you're at.</div>
+      <ul style="list-style:none;padding:0;margin-top:14px">
+        <li style="padding:8px 0;color:var(--text2);font-size:14px">✓ Custom plan based on your equipment</li>
+        <li style="padding:8px 0;color:var(--text2);font-size:14px">✓ Adjusted for your experience level</li>
+        <li style="padding:8px 0;color:var(--text2);font-size:14px">✓ Push / Pull / Legs split, 6 days a week</li>
+        <li style="padding:8px 0;color:var(--text2);font-size:14px">✓ Works offline. No subscription.</li>
+      </ul>
+    </div>
+    <div class="setup-btns"><button class="setup-btn primary" onclick="setupGo(1)">Get started</button></div>
+  </div>
+
+  <div class="setup-step" id="step-equipment">
+    <div class="setup-prog"><div class="on"></div><div></div></div>
+    <div class="setup-q">What do you have to train with?</div>
+    <div class="setup-sub">We'll customize your exercises based on your gear.</div>
+    <button class="opt" data-eq="dumbbells" onclick="pickOpt(this,'eq')">
+      <div class="opt-t">Dumbbells</div>
+      <div class="opt-d">Any pair will do — adjustable, fixed, or a single set. We work with what you've got.</div>
+    </button>
+    <button class="opt" data-eq="bodyweight" onclick="pickOpt(this,'eq')">
+      <div class="opt-t">Bodyweight only</div>
+      <div class="opt-d">No equipment needed. Just floor space and your body.</div>
+    </button>
+    <button class="opt" data-eq="both" onclick="pickOpt(this,'eq')">
+      <div class="opt-t">Dumbbells + bodyweight</div>
+      <div class="opt-d">Best of both — uses your dumbbells when needed, bodyweight to fill in.</div>
+    </button>
+    <div class="setup-btns">
+      <button class="setup-btn ghost" onclick="setupGo(0)">Back</button>
+      <button class="setup-btn primary" id="eq-next" disabled onclick="setupGo(2)">Continue</button>
+    </div>
+  </div>
+
+  <div class="setup-step" id="step-level">
+    <div class="setup-prog"><div class="on"></div><div class="on"></div></div>
+    <div class="setup-q">What's your experience level?</div>
+    <div class="setup-sub">Be honest — we'll meet you where you are.</div>
+    <button class="opt" data-lv="beginner" onclick="pickOpt(this,'lv')">
+      <div class="opt-t">Beginner</div>
+      <div class="opt-d">New to lifting, or coming back after a long break. Lighter sets, simpler moves.</div>
+    </button>
+    <button class="opt" data-lv="intermediate" onclick="pickOpt(this,'lv')">
+      <div class="opt-t">Intermediate</div>
+      <div class="opt-d">You've been training consistently for 6+ months. Ready for a real program.</div>
+    </button>
+    <button class="opt" data-lv="advanced" onclick="pickOpt(this,'lv')">
+      <div class="opt-t">Advanced</div>
+      <div class="opt-d">A year+ of consistent lifting. You want volume and harder variations.</div>
+    </button>
+    <div class="setup-btns">
+      <button class="setup-btn ghost" onclick="setupGo(1)">Back</button>
+      <button class="setup-btn primary" id="lv-next" disabled onclick="finishSetup()">Start training</button>
+    </div>
+  </div>
+</div>
+
+<nav class="nav" id="main-nav">
+  <button class="nb on" onclick="goPage('home')" id="nb-home">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Today
+  </button>
+  <button class="nb" onclick="goPage('cal')" id="nb-cal">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar
+  </button>
+  <button class="nb" onclick="goPage('stats')" id="nb-stats">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Progress
+  </button>
+  <button class="nb" onclick="goPage('cfg')" id="nb-cfg">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
+  </button>
+</nav>
+
+<div class="page on" id="page-home">
+  <div class="clock-wrap">
+    <div class="clock-time" id="clock">12:00 PM</div>
+    <div class="clock-date" id="clock-date">Monday, April 20</div>
+  </div>
+  <div class="alert on" id="alert-banner">
+    <div class="alert-t">Don't skip today!</div>
+    <div class="alert-b" id="alert-body">Your workout isn't done yet. You've got this!</div>
+  </div>
+  <div class="notif-prompt" id="notif-prompt">
+    <p>Enable notifications so we can remind you at 5 PM if your workout isn't done.</p>
+    <button onclick="askNotif()">Enable</button>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span class="badge" id="today-badge"></span>
+      <span style="font-size:13px;color:var(--text2)" id="today-streak"></span>
+    </div>
+    <div class="pb-row"><span id="h-prog-txt">0 of 6 done</span><span id="h-prog-pct">0%</span></div>
+    <div class="pb-wrap"><div class="pb-fill" id="h-pb" style="width:0%"></div></div>
+    <div id="h-exlist" style="margin-top:6px"></div>
+  </div>
+</div>
+
+<div class="page" id="page-cal">
+  <div class="card">
+    <div class="cal-hdr">
+      <button class="cnb" onclick="chMo(-1)">&#8592;</button>
+      <span style="font-size:15px;font-weight:600;color:var(--text)" id="cal-mo-lbl">April 2026</span>
+      <button class="cnb" onclick="chMo(1)">&#8594;</button>
+    </div>
+    <div class="cgrid" id="cal-dlbls"></div>
+    <div class="cgrid" id="cal-grid" style="margin-top:3px"></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span class="badge" id="cal-badge"></span>
+      <span style="font-size:13px;color:var(--text2)" id="cal-date-lbl"></span>
+    </div>
+    <div class="pb-row"><span id="c-prog-txt">0 of 6 done</span><span id="c-prog-pct">0%</span></div>
+    <div class="pb-wrap"><div class="pb-fill" id="c-pb" style="width:0%"></div></div>
+    <div id="c-exlist" style="margin-top:6px"></div>
+  </div>
+</div>
+
+<div class="page" id="page-stats">
+  <div class="sgrid">
+    <div class="scard"><div class="sval" id="st-streak">0</div><div class="slbl">day streak</div></div>
+    <div class="scard"><div class="sval" id="st-total">0</div><div class="slbl">workouts done</div></div>
+    <div class="scard"><div class="sval" id="st-week">0%</div><div class="slbl">this week</div></div>
+    <div class="scard"><div class="sval" id="st-ex">0</div><div class="slbl">exercises done</div></div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Last 4 weeks</div>
+    <div id="wk-bars" style="display:flex;gap:6px;align-items:flex-end;height:80px"></div>
+    <div id="wk-lbls" style="display:flex;gap:6px;margin-top:5px"></div>
+  </div>
+  <div class="card">
+    <div class="ctitle">This week</div>
+    <div id="wk-detail"></div>
+  </div>
+</div>
+
+<div class="page" id="page-cfg">
+  <div class="card">
+    <div class="ctitle">Your program</div>
+    <div class="srow">
+      <div><div class="slabel">Equipment</div><div class="ssub" id="cfg-eq">—</div></div>
+      <button class="btn-sm" onclick="redoSetup()">Change</button>
+    </div>
+    <div class="srow">
+      <div><div class="slabel">Experience level</div><div class="ssub" id="cfg-lv">—</div></div>
+      <button class="btn-sm" onclick="redoSetup()">Change</button>
+    </div>
+    <div class="srow"><div><div class="slabel">Schedule</div><div class="ssub">Push · Pull · Legs · Push · Pull · Legs · Rest</div></div></div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Notifications</div>
+    <div class="srow">
+      <div><div class="slabel">Daily reminder</div><div class="ssub">Remind if workout isn't done</div></div>
+      <input type="time" id="cfg-time" value="17:00" onchange="saveCfg('reminderTime',this.value)"/>
+    </div>
+    <div class="srow">
+      <div><div class="slabel">Skip Fri &amp; Sat nights</div><div class="ssub">For overnight shift workers</div></div>
+      <label class="tog"><input type="checkbox" id="cfg-overnight" checked onchange="saveCfg('skipOvernight',this.checked)"/><div class="tog-track"></div><div class="tog-thumb"></div></label>
+    </div>
+    <div class="srow">
+      <div><div class="slabel">Push notifications</div><div class="ssub" id="cfg-notif-status">Not enabled</div></div>
+      <button class="btn-sm primary" onclick="askNotif()">Enable</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Data</div>
+    <div class="srow">
+      <div><div class="slabel">Reset all progress</div><div class="ssub">Cannot be undone</div></div>
+      <button class="btn-sm danger" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">About</div>
+    <div class="srow"><div><div class="slabel">HomeFlex</div><div class="ssub">Strength training at home. Pay once. Yours forever.</div></div></div>
+  </div>
+</div>
+
+<script>
+const LIB={
+  dumbbells:{
+    beginner:{
+      push:[
+        {n:'Floor press',s:'3 × 8 reps',v:'https://www.youtube.com/results?search_query=dumbbell+floor+press+form+tutorial'},
+        {n:'Shoulder press (seated floor)',s:'3 × 8 reps',v:'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press+tutorial'},
+        {n:'Lateral raises',s:'2 × 12 reps',v:'https://www.youtube.com/results?search_query=dumbbell+lateral+raise+proper+form'},
+        {n:'Tricep overhead extension',s:'2 × 10 reps',v:'https://www.youtube.com/results?search_query=dumbbell+overhead+tricep+extension+how+to'},
+      ],
+      pull:[
+        {n:'Dumbbell row (brace on knee)',s:'3 × 8 reps each side',v:'https://www.youtube.com/results?search_query=dumbbell+one+arm+row+form+tutorial'},
+        {n:'Reverse flyes (lying face down)',s:'2 × 12 reps',v:'https://www.youtube.com/results?search_query=lying+dumbbell+reverse+fly+rear+delt'},
+        {n:'Bicep curl',s:'2 × 10 reps',v:'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form+tutorial'},
+        {n:'Hammer curl',s:'2 × 10 reps',v:'https://www.youtube.com/results?search_query=hammer+curl+dumbbell+form+tutorial'},
+      ],
+      legs:[
+        {n:'Goblet squat',s:'3 × 10 reps',v:'https://www.youtube.com/results?search_query=goblet+squat+dumbbell+proper+form'},
+        {n:'Romanian deadlift',s:'3 × 8 reps',v:'https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+form+tutorial'},
+        {n:'Reverse lunge',s:'2 × 8 reps each leg',v:'https://www.youtube.com/results?search_query=dumbbell+reverse+lunge+proper+form'},
+        {n:'Glute bridge (hold dumbbell)',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=dumbbell+glute+bridge+how+to'},
+      ],
+    },
+    intermediate:{
+      push:[
+        {n:'Floor press',s:'4 × 8–10 reps',v:'https://www.youtube.com/results?search_query=dumbbell+floor+press+form+tutorial'},
+        {n:'Floor flyes',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=dumbbell+floor+fly+chest+how+to'},
+        {n:'Shoulder press (seated floor)',s:'4 × 10 reps',v:'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press+tutorial'},
+        {n:'Lateral raises',s:'3 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+lateral+raise+proper+form'},
+        {n:'Tricep overhead extension',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=dumbbell+overhead+tricep+extension+how+to'},
+        {n:'Tricep kickbacks',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=dumbbell+tricep+kickback+form+tutorial'},
+      ],
+      pull:[
+        {n:'Dumbbell row (brace on knee)',s:'4 × 10 reps each side',v:'https://www.youtube.com/results?search_query=dumbbell+one+arm+row+form+tutorial'},
+        {n:'Renegade row',s:'3 × 8 reps each side',v:'https://www.youtube.com/results?search_query=renegade+row+dumbbell+proper+form'},
+        {n:'Reverse flyes (lying face down)',s:'3 × 15 reps',v:'https://www.youtube.com/results?search_query=lying+dumbbell+reverse+fly+rear+delt'},
+        {n:'Bicep curl',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form+tutorial'},
+        {n:'Hammer curl',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=hammer+curl+dumbbell+form+tutorial'},
+        {n:'Shrugs',s:'3 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+shoulder+shrug+how+to'},
+      ],
+      legs:[
+        {n:'Goblet squat',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=goblet+squat+dumbbell+proper+form'},
+        {n:'Romanian deadlift',s:'4 × 10 reps',v:'https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+form+tutorial'},
+        {n:'Reverse lunge',s:'3 × 10 reps each leg',v:'https://www.youtube.com/results?search_query=dumbbell+reverse+lunge+proper+form'},
+        {n:'Sumo squat',s:'3 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+sumo+squat+how+to+form'},
+        {n:'Glute bridge (hold dumbbell)',s:'3 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+glute+bridge+how+to'},
+        {n:'Calf raise (standing)',s:'4 × 20 reps',v:'https://www.youtube.com/results?search_query=standing+dumbbell+calf+raise+how+to'},
+      ],
+    },
+    advanced:{
+      push:[
+        {n:'Floor press',s:'5 × 8 reps',v:'https://www.youtube.com/results?search_query=dumbbell+floor+press+form+tutorial'},
+        {n:'Floor flyes',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=dumbbell+floor+fly+chest+how+to'},
+        {n:'Arnold press (seated)',s:'4 × 10 reps',v:'https://www.youtube.com/results?search_query=arnold+press+dumbbell+form'},
+        {n:'Lateral raises',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+lateral+raise+proper+form'},
+        {n:'Skull crushers (floor)',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=dumbbell+skull+crusher+floor+form'},
+        {n:'Tricep overhead extension',s:'3 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+overhead+tricep+extension+how+to'},
+        {n:'Diamond push-ups',s:'3 × max reps',v:'https://www.youtube.com/results?search_query=diamond+push+up+form+tutorial'},
+      ],
+      pull:[
+        {n:'Dumbbell row (brace on knee)',s:'5 × 10 reps each side',v:'https://www.youtube.com/results?search_query=dumbbell+one+arm+row+form+tutorial'},
+        {n:'Renegade row',s:'4 × 10 reps each side',v:'https://www.youtube.com/results?search_query=renegade+row+dumbbell+proper+form'},
+        {n:'Pendlay row (bent over)',s:'4 × 10 reps',v:'https://www.youtube.com/results?search_query=dumbbell+pendlay+row+form'},
+        {n:'Reverse flyes (lying face down)',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=lying+dumbbell+reverse+fly+rear+delt'},
+        {n:'Concentration curl',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=concentration+curl+dumbbell+form'},
+        {n:'Hammer curl',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=hammer+curl+dumbbell+form+tutorial'},
+        {n:'Shrugs',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+shoulder+shrug+how+to'},
+      ],
+      legs:[
+        {n:'Goblet squat',s:'5 × 12 reps',v:'https://www.youtube.com/results?search_query=goblet+squat+dumbbell+proper+form'},
+        {n:'Bulgarian split squat',s:'4 × 10 reps each leg',v:'https://www.youtube.com/results?search_query=dumbbell+bulgarian+split+squat+form'},
+        {n:'Romanian deadlift',s:'5 × 10 reps',v:'https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+form+tutorial'},
+        {n:'Reverse lunge',s:'4 × 12 reps each leg',v:'https://www.youtube.com/results?search_query=dumbbell+reverse+lunge+proper+form'},
+        {n:'Sumo squat',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+sumo+squat+how+to+form'},
+        {n:'Glute bridge (hold dumbbell)',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=dumbbell+glute+bridge+how+to'},
+        {n:'Calf raise (standing)',s:'5 × 20 reps',v:'https://www.youtube.com/results?search_query=standing+dumbbell+calf+raise+how+to'},
+      ],
+    },
+  },
+  bodyweight:{
+    beginner:{
+      push:[
+        {n:'Knee push-ups',s:'3 × 8 reps',v:'https://www.youtube.com/results?search_query=knee+push+up+proper+form'},
+        {n:'Incline push-ups (on couch)',s:'3 × 10 reps',v:'https://www.youtube.com/results?search_query=incline+push+up+beginner+form'},
+        {n:'Pike push-ups (knees down)',s:'2 × 6 reps',v:'https://www.youtube.com/results?search_query=pike+push+up+beginner+tutorial'},
+        {n:'Tricep dips (floor)',s:'2 × 8 reps',v:'https://www.youtube.com/results?search_query=floor+tricep+dip+beginner'},
+      ],
+      pull:[
+        {n:'Doorway rows',s:'3 × 10 reps',v:'https://www.youtube.com/results?search_query=doorway+row+bodyweight+how+to'},
+        {n:'Superman holds',s:'3 × 20 sec',v:'https://www.youtube.com/results?search_query=superman+exercise+form'},
+        {n:'Reverse snow angels (face down)',s:'2 × 12 reps',v:'https://www.youtube.com/results?search_query=reverse+snow+angels+exercise'},
+        {n:'Towel curl (under foot)',s:'2 × 12 reps',v:'https://www.youtube.com/results?search_query=towel+isometric+curl+bicep'},
+      ],
+      legs:[
+        {n:'Bodyweight squat',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=bodyweight+squat+proper+form+beginner'},
+        {n:'Glute bridge',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=glute+bridge+bodyweight+form'},
+        {n:'Reverse lunge',s:'2 × 8 reps each leg',v:'https://www.youtube.com/results?search_query=reverse+lunge+bodyweight+form'},
+        {n:'Calf raise',s:'3 × 15 reps',v:'https://www.youtube.com/results?search_query=bodyweight+calf+raise+form'},
+      ],
+    },
+    intermediate:{
+      push:[
+        {n:'Push-ups',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=push+up+proper+form+tutorial'},
+        {n:'Decline push-ups (feet on couch)',s:'3 × 10 reps',v:'https://www.youtube.com/results?search_query=decline+push+up+form'},
+        {n:'Pike push-ups',s:'3 × 8 reps',v:'https://www.youtube.com/results?search_query=pike+push+up+shoulder+form'},
+        {n:'Wide push-ups',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=wide+push+up+chest+form'},
+        {n:'Tricep dips (floor)',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=floor+tricep+dip+form'},
+        {n:'Diamond push-ups',s:'3 × 8 reps',v:'https://www.youtube.com/results?search_query=diamond+push+up+form+tutorial'},
+      ],
+      pull:[
+        {n:'Doorway rows',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=doorway+row+bodyweight+how+to'},
+        {n:'Superman holds',s:'3 × 30 sec',v:'https://www.youtube.com/results?search_query=superman+exercise+form'},
+        {n:'Reverse snow angels (face down)',s:'3 × 15 reps',v:'https://www.youtube.com/results?search_query=reverse+snow+angels+exercise'},
+        {n:'YTW raises (face down)',s:'3 × 10 each',v:'https://www.youtube.com/results?search_query=ytw+raise+exercise+rear+delt'},
+        {n:'Towel curl (under foot)',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=towel+isometric+curl+bicep'},
+        {n:'Plank to push-up',s:'3 × 8 each side',v:'https://www.youtube.com/results?search_query=plank+to+push+up+exercise'},
+      ],
+      legs:[
+        {n:'Bodyweight squat',s:'4 × 20 reps',v:'https://www.youtube.com/results?search_query=bodyweight+squat+proper+form+beginner'},
+        {n:'Bulgarian split squat',s:'3 × 10 each leg',v:'https://www.youtube.com/results?search_query=bulgarian+split+squat+bodyweight+form'},
+        {n:'Single leg glute bridge',s:'3 × 12 each leg',v:'https://www.youtube.com/results?search_query=single+leg+glute+bridge+form'},
+        {n:'Reverse lunge',s:'3 × 12 reps each leg',v:'https://www.youtube.com/results?search_query=reverse+lunge+bodyweight+form'},
+        {n:'Jump squats',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=jump+squat+bodyweight+form'},
+        {n:'Calf raise',s:'4 × 20 reps',v:'https://www.youtube.com/results?search_query=bodyweight+calf+raise+form'},
+      ],
+    },
+    advanced:{
+      push:[
+        {n:'Push-ups',s:'5 × 20 reps',v:'https://www.youtube.com/results?search_query=push+up+proper+form+tutorial'},
+        {n:'Decline push-ups (feet on couch)',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=decline+push+up+form'},
+        {n:'Pike push-ups',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=pike+push+up+shoulder+form'},
+        {n:'Archer push-ups',s:'4 × 6 each side',v:'https://www.youtube.com/results?search_query=archer+push+up+form'},
+        {n:'Diamond push-ups',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=diamond+push+up+form+tutorial'},
+        {n:'Tricep dips (floor)',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=floor+tricep+dip+form'},
+        {n:'Pseudo planche push-ups',s:'3 × 8 reps',v:'https://www.youtube.com/results?search_query=pseudo+planche+push+up+form'},
+      ],
+      pull:[
+        {n:'Doorway rows',s:'5 × 15 reps',v:'https://www.youtube.com/results?search_query=doorway+row+bodyweight+how+to'},
+        {n:'Towel rows (under door)',s:'4 × 12 reps',v:'https://www.youtube.com/results?search_query=towel+row+door+bodyweight'},
+        {n:'Superman holds',s:'4 × 45 sec',v:'https://www.youtube.com/results?search_query=superman+exercise+form'},
+        {n:'YTW raises (face down)',s:'4 × 12 each',v:'https://www.youtube.com/results?search_query=ytw+raise+exercise+rear+delt'},
+        {n:'Reverse snow angels',s:'4 × 20 reps',v:'https://www.youtube.com/results?search_query=reverse+snow+angels+exercise'},
+        {n:'Plank to push-up',s:'4 × 10 each side',v:'https://www.youtube.com/results?search_query=plank+to+push+up+exercise'},
+        {n:'Towel curl (under foot)',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=towel+isometric+curl+bicep'},
+      ],
+      legs:[
+        {n:'Bodyweight squat',s:'5 × 25 reps',v:'https://www.youtube.com/results?search_query=bodyweight+squat+proper+form+beginner'},
+        {n:'Pistol squat (assisted)',s:'4 × 6 each leg',v:'https://www.youtube.com/results?search_query=pistol+squat+assisted+progression'},
+        {n:'Bulgarian split squat',s:'4 × 12 each leg',v:'https://www.youtube.com/results?search_query=bulgarian+split+squat+bodyweight+form'},
+        {n:'Single leg glute bridge',s:'4 × 15 each leg',v:'https://www.youtube.com/results?search_query=single+leg+glute+bridge+form'},
+        {n:'Jump squats',s:'4 × 15 reps',v:'https://www.youtube.com/results?search_query=jump+squat+bodyweight+form'},
+        {n:'Reverse lunge',s:'4 × 15 reps each leg',v:'https://www.youtube.com/results?search_query=reverse+lunge+bodyweight+form'},
+        {n:'Calf raise (single leg)',s:'4 × 15 each leg',v:'https://www.youtube.com/results?search_query=single+leg+calf+raise'},
+      ],
+    },
+  },
+};
+LIB.both={
+  beginner:{
+    push:[...LIB.dumbbells.beginner.push,{n:'Push-ups (finisher)',s:'2 × max reps',v:'https://www.youtube.com/results?search_query=push+up+proper+form+tutorial'}],
+    pull:[...LIB.dumbbells.beginner.pull,{n:'Superman holds',s:'2 × 20 sec',v:'https://www.youtube.com/results?search_query=superman+exercise+form'}],
+    legs:[...LIB.dumbbells.beginner.legs,{n:'Calf raise',s:'2 × 15 reps',v:'https://www.youtube.com/results?search_query=bodyweight+calf+raise+form'}],
+  },
+  intermediate:{
+    push:[...LIB.dumbbells.intermediate.push,{n:'Push-ups (finisher)',s:'3 × max reps',v:'https://www.youtube.com/results?search_query=push+up+proper+form+tutorial'}],
+    pull:[...LIB.dumbbells.intermediate.pull,{n:'Superman holds',s:'3 × 30 sec',v:'https://www.youtube.com/results?search_query=superman+exercise+form'}],
+    legs:[...LIB.dumbbells.intermediate.legs,{n:'Jump squats',s:'3 × 12 reps',v:'https://www.youtube.com/results?search_query=jump+squat+bodyweight+form'}],
+  },
+  advanced:{
+    push:[...LIB.dumbbells.advanced.push,{n:'Archer push-ups',s:'3 × 6 each side',v:'https://www.youtube.com/results?search_query=archer+push+up+form'}],
+    pull:[...LIB.dumbbells.advanced.pull,{n:'Plank to push-up',s:'3 × 10 each side',v:'https://www.youtube.com/results?search_query=plank+to+push+up+exercise'}],
+    legs:[...LIB.dumbbells.advanced.legs,{n:'Pistol squat (assisted)',s:'3 × 6 each leg',v:'https://www.youtube.com/results?search_query=pistol+squat+assisted+progression'}],
+  },
+};
+
+const REST_EX=[
+  {n:'Light walk or stretching',s:'Optional — 20 min',v:'https://www.youtube.com/results?search_query=full+body+stretching+routine+beginners'},
+  {n:'Full body mobility',s:'10–15 min',v:'https://www.youtube.com/results?search_query=full+body+mobility+routine+beginners'},
+];
+
+const DAY_META={
+  push:{label:'Push day',bg:'var(--push)',tc:'var(--push-t)',dot:'#D85A30'},
+  pull:{label:'Pull day',bg:'var(--pull)',tc:'var(--pull-t)',dot:'#1D9E75'},
+  legs:{label:'Legs day',bg:'var(--legs)',tc:'var(--legs-t)',dot:'#7F77DD'},
+  rest:{label:'Rest day',bg:'var(--rest)',tc:'var(--rest-t)',dot:'#888780'},
+};
+
+const SCHED=['push','pull','legs','push','pull','legs','rest'];
+const MOS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MOS3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+let PROFILE=JSON.parse(localStorage.getItem('hf_profile')||'null');
+let ST=JSON.parse(localStorage.getItem('hf_st')||'null')||{done:{},ex:{}};
+let CFG=JSON.parse(localStorage.getItem('hf_cfg')||'null')||{reminderTime:'17:00',skipOvernight:true};
+let calMo=new Date();calMo.setDate(1);
+let calSel=new Date();
+let setupChoices={eq:null,lv:null};
+
+function saveProfile(){localStorage.setItem('hf_profile',JSON.stringify(PROFILE))}
+function saveST(){localStorage.setItem('hf_st',JSON.stringify(ST))}
+function saveCfg(k,v){CFG[k]=v;localStorage.setItem('hf_cfg',JSON.stringify(CFG))}
+
+function fk(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function dtype(d){
+  if(!PROFILE||!PROFILE.startDate)return null;
+  const start=new Date(PROFILE.startDate);
+  const diff=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(start.getFullYear(),start.getMonth(),start.getDate()))/86400000);
+  if(diff<0)return null;
+  return SCHED[((diff%7)+7)%7];
+}
+function getEx(type){
+  if(!type||type==='rest')return REST_EX;
+  if(!PROFILE)return [];
+  return LIB[PROFILE.eq][PROFILE.lv][type]||[];
+}
+function dayMeta(type){return DAY_META[type||'rest']}
+
+function showSetup(){document.getElementById('setup').classList.add('on');setupGo(0)}
+function hideSetup(){document.getElementById('setup').classList.remove('on')}
+function setupGo(idx){
+  document.querySelectorAll('.setup-step').forEach(x=>x.classList.remove('on'));
+  const ids=['step-welcome','step-equipment','step-level'];
+  document.getElementById(ids[idx]).classList.add('on');
+}
+function pickOpt(btn,key){
+  const parent=btn.parentElement;
+  parent.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+  btn.classList.add('sel');
+  setupChoices[key]=btn.dataset[key];
+  if(key==='eq')document.getElementById('eq-next').disabled=false;
+  if(key==='lv')document.getElementById('lv-next').disabled=false;
+}
+function finishSetup(){
+  PROFILE={eq:setupChoices.eq,lv:setupChoices.lv,startDate:PROFILE?.startDate||new Date().toISOString()};
+  saveProfile();
+  hideSetup();
+  renderHome();
+  loadCfg();
+}
+function redoSetup(){
+  if(!confirm('Change your program? Your progress will be kept, but exercises will switch to the new selection.'))return;
+  setupChoices={eq:PROFILE?.eq||null,lv:PROFILE?.lv||null};
+  showSetup();
+  setTimeout(()=>{
+    if(setupChoices.eq){
+      const b=document.querySelector(`.opt[data-eq="${setupChoices.eq}"]`);
+      if(b){b.classList.add('sel');document.getElementById('eq-next').disabled=false;}
+    }
+    if(setupChoices.lv){
+      const b=document.querySelector(`.opt[data-lv="${setupChoices.lv}"]`);
+      if(b){b.classList.add('sel');document.getElementById('lv-next').disabled=false;}
+    }
+  },10);
+}
+
+function tick(){
+  const n=new Date();
+  let h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();
+  const ap=h>=12?'PM':'AM';h=h%12||12;
+  document.getElementById('clock').textContent=h+':'+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s)+' '+ap;
+  document.getElementById('clock-date').textContent=DAYS[n.getDay()]+', '+MOS[n.getMonth()]+' '+n.getDate();
+}
+setInterval(tick,1000);tick();
+
+function goPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'));
+  document.getElementById('page-'+p).classList.add('on');
+  document.getElementById('nb-'+p).classList.add('on');
+  if(p==='cal'){calSel=new Date();renderCal();}
+  if(p==='stats')renderStats();
+  if(p==='cfg')loadCfg();
+}
+
+function renderEx(listId,ptxt,ppct,pfill,type,key,scope){
+  if(!ST.ex[key])ST.ex[key]={};
+  const exs=getEx(type);
+  let done=0;
+  let html='';
+  exs.forEach((e,i)=>{
+    const d=!!ST.ex[key][i];
+    if(d)done++;
+    html+=`<div class="ex-item">
+      <div class="chk${d?' dn':''}" onclick="${scope}toggle('${key}',${i},'${type}')"></div>
+      <div class="ex-info"><div class="exn">${e.n}</div><div class="exs">${e.s}</div></div>
+      <a class="vid-btn" href="${e.v}" target="_blank">Watch &#8599;</a>
+    </div>`;
+  });
+  document.getElementById(listId).innerHTML=html;
+  const tot=exs.length;
+  const pct=tot>0?Math.round(done/tot*100):0;
+  document.getElementById(ptxt).textContent=done+' of '+tot+' done';
+  document.getElementById(ppct).textContent=pct+'%';
+  document.getElementById(pfill).style.width=pct+'%';
+  if(done>=tot&&tot>0){ST.done[key]=true;saveST();}
+  else if(!done){delete ST.done[key];saveST();}
+}
+
+function renderHome(){
+  const today=new Date();
+  const key=fk(today);
+  const type=dtype(today)||'rest';
+  const meta=dayMeta(type);
+  const b=document.getElementById('today-badge');
+  b.textContent=meta.label;b.style.background=meta.bg;b.style.color=meta.tc;
+  document.getElementById('today-streak').textContent='🔥 '+calcStreak()+' day streak';
+  renderEx('h-exlist','h-prog-txt','h-prog-pct','h-pb',type,key,'h_');
+  checkAlert(today,type,key);
+}
+
+function h_toggle(key,idx,type){toggle(key,idx,type);renderHome();}
+function c_toggle(key,idx,type){toggle(key,idx,type);renderCalEx();}
+
+function toggle(key,idx,type){
+  if(!ST.ex[key])ST.ex[key]={};
+  ST.ex[key][idx]=!ST.ex[key][idx];
+  const tot=getEx(type).length;
+  const done=Object.values(ST.ex[key]).filter(Boolean).length;
+  if(done>=tot)ST.done[key]=true;
+  else delete ST.done[key];
+  saveST();
+}
+
+function checkAlert(today,type,key){
+  const banner=document.getElementById('alert-banner');
+  if(!type||type==='rest'){banner.classList.remove('on');return;}
+  const meta=dayMeta(type);
+  const now=new Date();
+  const [rh,rm]=CFG.reminderTime.split(':').map(Number);
+  const past=now.getHours()>rh||(now.getHours()===rh&&now.getMinutes()>=rm);
+  const isDone=!!ST.done[key];
+  const dow=today.getDay();
+  const overnight=CFG.skipOvernight&&(dow===5||dow===6);
+  if(past&&!isDone&&!overnight){
+    banner.classList.add('on');
+    const h=rh%12||12;const ap=rh>=12?'PM':'AM';
+    document.getElementById('alert-body').textContent="It's past "+h+':'+(rm<10?'0'+rm:rm)+' '+ap+"! Your "+meta.label.toLowerCase()+" isn't done. You've got this!";
+  }else{
+    banner.classList.remove('on');
+  }
+}
+
+function askNotif(){
+  if(!('Notification' in window)){alert('Notifications not supported in this browser.');return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){
+      document.getElementById('notif-prompt').style.display='none';
+      document.getElementById('cfg-notif-status').textContent='Enabled';
+      schedNotif();
+    }
+  });
+}
+function schedNotif(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const now=new Date();
+  const [rh,rm]=CFG.reminderTime.split(':').map(Number);
+  const t=new Date(now.getFullYear(),now.getMonth(),now.getDate(),rh,rm,0);
+  const type=dtype(now);
+  const dow=now.getDay();
+  const overnight=CFG.skipOvernight&&(dow===5||dow===6);
+  if(t>now&&type&&type!=='rest'&&!overnight){
+    setTimeout(()=>{
+      if(!ST.done[fk(new Date())]){
+        new Notification('HomeFlex — Don\'t skip!',{body:'Your '+dayMeta(type).label+' is waiting. Tap to open.',icon:'icons/icon-192.png',tag:'workout-reminder'});
+      }
+    },t-now);
+  }
+}
+
+function renderCal(){
+  document.getElementById('cal-dlbls').innerHTML=['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="clbl">${d}</div>`).join('');
+  const yr=calMo.getFullYear(),mo=calMo.getMonth();
+  document.getElementById('cal-mo-lbl').textContent=MOS[mo]+' '+yr;
+  const first=new Date(yr,mo,1).getDay();
+  const tot=new Date(yr,mo+1,0).getDate();
+  const today=new Date();
+  let html='';
+  for(let i=0;i<first;i++)html+='<div></div>';
+  for(let d=1;d<=tot;d++){
+    const dt=new Date(yr,mo,d);
+    const key=fk(dt);
+    const type=dtype(dt);
+    const isTd=dt.toDateString()===today.toDateString();
+    const isSel=dt.toDateString()===calSel.toDateString();
+    const isDone=!!ST.done[key];
+    let dot='';
+    if(isDone)dot='#639922';
+    else if(type)dot=dayMeta(type).dot;
+    let cls='cday';
+    if(type)cls+=' ht';
+    if(isTd)cls+=' td';
+    if(isSel)cls+=' sel';
+    html+=`<div class="${cls}" onclick="calPick(${yr},${mo},${d})">${d}${dot?`<div class="cdot" style="background:${dot}"></div>`:'<div style="height:7px"></div>'}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+  renderCalEx();
+}
+function calPick(yr,mo,d){calSel=new Date(yr,mo,d);renderCal();}
+function chMo(dir){calMo=new Date(calMo.getFullYear(),calMo.getMonth()+dir,1);renderCal();}
+function renderCalEx(){
+  const type=dtype(calSel)||'rest';
+  const key=fk(calSel);
+  const meta=dayMeta(type);
+  const b=document.getElementById('cal-badge');
+  b.textContent=meta.label;b.style.background=meta.bg;b.style.color=meta.tc;
+  document.getElementById('cal-date-lbl').textContent=MOS3[calSel.getMonth()]+' '+calSel.getDate()+', '+calSel.getFullYear();
+  renderEx('c-exlist','c-prog-txt','c-prog-pct','c-pb',type,key,'c_');
+}
+
+function calcStreak(){
+  const today=new Date();let s=0;
+  const d=new Date(today);
+  if(ST.done[fk(d)])s++;
+  d.setDate(d.getDate()-1);
+  while(ST.done[fk(d)]){s++;d.setDate(d.getDate()-1);}
+  return s;
+}
+function renderStats(){
+  document.getElementById('st-streak').textContent=calcStreak();
+  document.getElementById('st-total').textContent=Object.keys(ST.done).length;
+  let tex=0;Object.values(ST.ex).forEach(o=>{tex+=Object.values(o).filter(Boolean).length;});
+  document.getElementById('st-ex').textContent=tex;
+  const today=new Date();
+  const sun=new Date(today);sun.setDate(today.getDate()-today.getDay());
+  let wd=0,wt=0;
+  for(let i=0;i<7;i++){const x=new Date(sun);x.setDate(sun.getDate()+i);const t=dtype(x);if(t&&t!=='rest'){wt++;if(ST.done[fk(x)])wd++;}}
+  document.getElementById('st-week').textContent=wt>0?Math.round(wd/wt*100)+'%':'0%';
+  let bh='',bl='';
+  for(let w=3;w>=0;w--){
+    const ws=new Date(today);ws.setDate(today.getDate()-today.getDay()-w*7);
+    let d=0,t=0;
+    for(let i=0;i<7;i++){const x=new Date(ws);x.setDate(ws.getDate()+i);const tp=dtype(x);if(tp&&tp!=='rest'){t++;if(ST.done[fk(x)])d++;}}
+    const pct=t>0?Math.round(d/t*100):0;
+    const ht=Math.max(6,Math.round(pct*.74));
+    bh+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:10px;color:var(--text3)">${pct}%</span><div style="width:100%;height:${ht}px;background:var(--green);border-radius:3px 3px 0 0;opacity:${w===0?1:.45}"></div></div>`;
+    bl+=`<div style="flex:1;text-align:center;font-size:10px;color:var(--text3)">${MOS3[ws.getMonth()]} ${ws.getDate()}</div>`;
+  }
+  document.getElementById('wk-bars').innerHTML=bh;
+  document.getElementById('wk-lbls').innerHTML=bl;
+  const sun2=new Date(today);sun2.setDate(today.getDate()-today.getDay());
+  let wdh='';
+  for(let i=0;i<7;i++){
+    const d=new Date(sun2);d.setDate(sun2.getDate()+i);
+    const type=dtype(d);const key=fk(d);
+    const isDone=!!ST.done[key];
+    const isTd=d.toDateString()===today.toDateString();
+    const meta=type?dayMeta(type):null;
+    wdh+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${type&&type!=='rest'&&meta?meta.dot:'var(--bg3)'}"></div>
+        <span style="font-size:14px;font-weight:${isTd?600:400};color:${isTd?'var(--blue)':'var(--text)'}">${DAYS[d.getDay()].slice(0,3)}</span>
+      </div>
+      <span style="font-size:13px;color:var(--text2)">${meta?meta.label:'—'}</span>
+      <span style="font-size:12px;padding:3px 10px;border-radius:12px;background:${isDone?'var(--green-l)':'var(--bg2)'};color:${isDone?'var(--green-t)':'var(--text3)'}">${isDone?'Done':type&&type!=='rest'?'Pending':'—'}</span>
+    </div>`;
+  }
+  document.getElementById('wk-detail').innerHTML=wdh;
+}
+
+const EQ_LBL={dumbbells:'Dumbbells only',bodyweight:'Bodyweight only',both:'Dumbbells + bodyweight'};
+const LV_LBL={beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced'};
+function loadCfg(){
+  document.getElementById('cfg-time').value=CFG.reminderTime;
+  document.getElementById('cfg-overnight').checked=CFG.skipOvernight;
+  document.getElementById('cfg-notif-status').textContent=('Notification' in window&&Notification.permission==='granted')?'Enabled':'Not enabled';
+  document.getElementById('cfg-eq').textContent=PROFILE?EQ_LBL[PROFILE.eq]:'—';
+  document.getElementById('cfg-lv').textContent=PROFILE?LV_LBL[PROFILE.lv]:'—';
+}
+
+function resetAll(){
+  if(confirm('Reset all progress? This cannot be undone.')){
+    ST={done:{},ex:{}};saveST();renderHome();alert('Progress reset.');
+  }
+}
+
+if(!PROFILE){showSetup();}else{renderHome();}
+if('Notification' in window&&Notification.permission==='default'&&PROFILE){
+  document.getElementById('notif-prompt').style.display='flex';
+}
+if(PROFILE)schedNotif();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js");}</script>
+</body>
+</html>

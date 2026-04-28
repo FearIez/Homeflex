@@ -1070,7 +1070,7 @@ function schedNotif(){
   if(t>now&&type&&type!=='rest'&&!skipDay){
     setTimeout(()=>{
       if(!ST.done[fk(new Date())]){
-        new Notification('HomeFlex — Don\'t skip!',{body:'Your '+dayMeta(type).label+' is waiting. Tap to open.',icon:'icons/icon-192.png',tag:'workout-reminder'});
+        new Notification('HomeFlex — Don\'t skip!',{body:'Your '+dayMeta(type).label+' is waiting. Tap to open.',icon:'icon-192.png',tag:'workout-reminder'});
       }
     },t-now);
   }
